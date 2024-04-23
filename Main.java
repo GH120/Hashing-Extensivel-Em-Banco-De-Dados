@@ -2,27 +2,17 @@ class Main {
     
     public static void main(String[] args){
         
-        // Bucket teste = new Bucket(29);
+        Bucket bucket = new Bucket(29);
 
-        // teste.adicionarRegistro(1,2002);
-        // teste.adicionarRegistro(3,2022);
-        // teste.adicionarRegistro(0,2012);
+        bucket.adicionarRegistro(1,2002);
+        bucket.adicionarRegistro(3,2022);
+        bucket.adicionarRegistro(0,2012);
 
-        // teste.salvarBucket();
-        // teste.salvarBucket();
-        // teste.salvarBucket();
+        bucket.salvarBucket();
+        // bucket.salvarBucket();
+        // bucket.salvarBucket();
 
-        Diretorio teste = new Diretorio(4);
-
-        teste.inserirBucket(new Bucket(20));
-
-        try{
-            teste.armazenarDiretorio("diretorio.txt");
-
-        }
-        catch(Exception e){
-
-        }
+        var algoritmo = new HashingExtensivel(3);
 
 
     }

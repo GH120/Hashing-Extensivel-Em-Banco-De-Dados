@@ -1,5 +1,6 @@
     import java.util.ArrayList;
     import java.io.*;
+    import java.util.*;
     
 
     //Representa o diretório que aponta para buckets
@@ -11,23 +12,21 @@
 
         public  int profundidade;
         private ArrayList<Integer> ponteiros; // Lista de ponteiros para os números dos arquivos dos buckets
-    
+        private ArrayList<Integer> profundidadesLocais;
+
         public Diretorio(int depth) {
 
-            profundidade = depth;
-            ponteiros    = this.criarPonteiros(depth);
+            profundidade        = depth;
+            ponteiros           = this.criarPonteiros(depth);
+
+            //Preenche um array de profundidades locais para cada ponteiro
+            profundidadesLocais = new ArrayList<>(Collections.nCopies(ponteiros.size(), depth));
 
         }
-
-        public void inserirBucket(Bucket bucketImagem){
-            
-            while(profundidade < bucketImagem.profundidade){
-                duplicarDiretorio();
-            }
-
-            ponteiros.set(bucketImagem.numero, bucketImagem.numero);
+        
+        public void mudarPonteiro(int idBucket, int indice){
+            this.ponteiros.set(indice, idBucket);
         }
-    
     
         // Método para obter um bucket a partir do número guardado na posição 'i' da lista
         public Bucket obterBucket(int indice) {
@@ -37,21 +36,7 @@
             return new Bucket(numeroBucket).carregarBucket();
         }
 
-        private ArrayList<Integer> criarPonteiros(int profundidade){
-
-            var lista  = new ArrayList<Integer>();
-
-            double quantidade = Math.pow(2, profundidade);
-
-            for (int i = 0; i < quantidade; i++) {
-                lista.add(i);
-            }
-
-            return lista;
-        }
-
-        //Duplica o tamanho do diretório baseado em um novo bucket imagem
-        private void duplicarDiretorio() {
+        public void duplicarDiretorio() {
 
             int tamanhoAtual = ponteiros.size();
             int novoTamanho = tamanhoAtual * 2;
@@ -104,7 +89,24 @@
                 System.out.println("Posição " + i + ": " + Integer.toBinaryString(ponteiros.get(i)));
             }
         }
+
+        public Integer getProfundidade(Bucket Bucket){
+
+            return profundidadesLocais.get(Bucket.numero);
+        }
+
+        private ArrayList<Integer> criarPonteiros(int profundidade){
+
+            var lista  = new ArrayList<Integer>();
+
+            double quantidade = Math.pow(2, profundidade);
+
+            for (int i = 0; i < quantidade; i++) {
+                lista.add(i);
+            }
+
+            return lista;
+        }
     
-        // Outros métodos, como remover ponteiros, alterar ponteiros, etc., podem ser adicionados conforme necessário
     }
     

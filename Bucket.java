@@ -7,7 +7,6 @@ import java.io.FileWriter;
 
 public class Bucket {
 
-    public int             profundidade = 5;
     public int             numero;
     private String         arquivo; // Nome do arquivo que contém os registros
     private List<Registro> registros;
@@ -60,7 +59,7 @@ public class Bucket {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(arquivo))) {
 
             for (Registro registro : registros) {
-                writer.write(registro.getNumeroLinha() + "," + registro.getAno());
+                writer.write(registro.linha + "," + registro.valor);
                 writer.newLine();
             }
 
@@ -79,23 +78,4 @@ public class Bucket {
     public void adicionarRegistro(int numeroLinha, int ano) {
         registros.add(new Registro(numeroLinha, ano));
     }
-}
-
-class Registro {
-    private int numeroLinha;
-    private int ano;
-
-    public Registro(int numeroLinha, int ano) {
-        this.numeroLinha = numeroLinha;
-        this.ano = ano;
-    }
-
-    public int getNumeroLinha() {
-        return numeroLinha;
-    }
-
-    public int getAno() {
-        return ano;
-    }
-    
 }
