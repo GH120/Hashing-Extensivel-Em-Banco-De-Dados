@@ -34,7 +34,7 @@
             
             int numeroBucket = ponteiros.get(indice);
 
-            return new Bucket(numeroBucket);
+            return new Bucket(numeroBucket).carregarBucket();
         }
 
         private ArrayList<Integer> criarPonteiros(int profundidade){

@@ -25,6 +25,9 @@ public class HashingExtensivel {
     }
 
     void buscarValor(){
-        
+
     }
+
+    //Obs: Ao duplicar um bucket, salvar o original com profundidade incrementada
+    //Obs: Ao criar uma imagem, lembrar de salvar ela depois
 }

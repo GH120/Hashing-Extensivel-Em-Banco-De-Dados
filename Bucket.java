@@ -21,7 +21,8 @@ public class Bucket {
         registros =  new ArrayList<>();
     }
 
-    public void carregarBucket() {
+    //É aqui que ele carrega a nova profundidade
+    public Bucket carregarBucket() {
 
         registros.clear(); // Limpa os registros existentes
 
@@ -49,6 +50,8 @@ public class Bucket {
 
         }
         catch(Exception e){}
+
+        return this;
     }
 
     public void salvarBucket() {
