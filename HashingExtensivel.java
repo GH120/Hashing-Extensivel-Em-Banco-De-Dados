@@ -108,7 +108,7 @@ public class HashingExtensivel {
         //A imagem de 00 é 100, a imagem de 1001 é 11001 e assim em diante
         Integer bucketImagem  = bucket.numero + (1 << profundidadeLocal);
 
-        //O step entre cada índice que apontava para o bucket original
+        //O step entre cada índice que apontava para o bucket original 16
         double step = Math.pow(2, profundidadeLocal);
 
         //Percorre o diretorio atualizando ponteiros e profundidades desses buckets

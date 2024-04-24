@@ -8,7 +8,7 @@ import java.io.IOException;
 
 public class Bucket {
 
-    public int             numero;
+    public  int            numero;
     private String         arquivo; // Nome do arquivo que contém os registros
     private List<Registro> registros;
 
