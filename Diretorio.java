@@ -7,7 +7,8 @@
     //O diretório vai guardar o número dos arquivos dos buckets
     //O diretório vai guardar uma lista de ponteiros para esses numeros
     //O diretório vai ter um método que retorna UM e apenas UM bucket a partir do número guardado na posição i da lista
-    
+    //Transformar bucket em singleton no diretório
+
     public class Diretorio {
 
         public  int profundidade;
@@ -25,7 +26,11 @@
         }
         
         public void mudarPonteiro(int idBucket, int indice){
-            this.ponteiros.set(indice, idBucket);
+            ponteiros.set(indice, idBucket);
+        }
+
+        public void incrementarProfundidadeLocal(int indice){
+            profundidadesLocais.set(indice, profundidadesLocais.get(indice) + 1);
         }
     
         // Método para obter um bucket a partir do número guardado na posição 'i' da lista

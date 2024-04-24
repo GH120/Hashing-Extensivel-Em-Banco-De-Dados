@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.io.IOException;
 
 public class Bucket {
 
@@ -48,7 +49,9 @@ public class Bucket {
             }
 
         }
-        catch(Exception e){}
+        catch(IOException falhouLeitura ){
+            salvarBucket();
+        }
 
         return this;
     }
