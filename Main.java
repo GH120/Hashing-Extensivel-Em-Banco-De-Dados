@@ -15,6 +15,9 @@ class Main {
         var algoritmo = new HashingExtensivel(2);
 
         algoritmo.inserirValor(1, 22);
+
+
+
         
         try{
             algoritmo.diretorio.armazenarDiretorio("diretorio");

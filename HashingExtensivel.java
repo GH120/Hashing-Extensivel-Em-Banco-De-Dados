@@ -21,23 +21,6 @@ public class HashingExtensivel {
 
     }
 
-    void CriarDiretorio(String arquivoDiretorio){
-
-        diretorio = new Diretorio(profundidadeGlobal);
-
-        //Se tiver diretorio, carrega ele
-        try{
-            diretorio.carregarDiretorio(arquivoDiretorio);
-
-            profundidadeGlobal = diretorio.profundidade;
-        }
-        catch(Exception e){
-            diretorio = new Diretorio(profundidadeGlobal);
-
-            
-        }
-    }
-
     void inserirValor(Integer linha, Integer valor){
 
         var bucket = diretorio.obterBucket(getIndice(valor));
@@ -63,6 +46,23 @@ public class HashingExtensivel {
 
     }
 
+    void CriarDiretorio(String arquivoDiretorio){
+
+        diretorio = new Diretorio(profundidadeGlobal);
+
+        //Se tiver diretorio, carrega ele
+        try{
+            diretorio.carregarDiretorio(arquivoDiretorio);
+
+            profundidadeGlobal = diretorio.profundidade;
+        }
+        catch(Exception e){
+            diretorio = new Diretorio(profundidadeGlobal);
+
+            
+        }
+    }
+
     void handleOverflow(Bucket bucket, int linha, int valor){
 
         int profundidadeLocal = diretorio.getProfundidade(bucket);
@@ -70,18 +70,18 @@ public class HashingExtensivel {
         //Se precisar duplicar o diretório, o faz e incrementa profundidade global
         if(profundidadeLocal == profundidadeGlobal){
             diretorio.duplicarDiretorio();
-            diretorio.duplicarDiretorio();
             profundidadeGlobal++;
         }
         
         //A imagem de 00 é 100, a imagem de 1001 é 11001 e assim em diante
         //O novo índice vai ser o mesmo do anterior, mas com um bit a direita
-        Integer novoIndice  = bucket.numero + 1 << profundidadeLocal;
+        Integer novoIndice  = bucket.numero + (1 << profundidadeLocal);
 
         //Agora o ponteiro aponta para o novo bucket ao invés do antigo
         //PS: só funciona para diferenças 1 de profundidade
         // Pois se tiver 64 copias do mesmo bucket vou ter que alterar metade
         diretorio.mudarPonteiro(novoIndice, novoIndice);
+        diretorio.imprimirPonteiros();
         // diretorio.incrementarProfundidadeLocal(novoIndice);
 
 
