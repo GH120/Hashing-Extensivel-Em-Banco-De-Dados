@@ -7,4 +7,7 @@ public class Registro {
         this.valor = valor;
     }
 
+    public String toString(){
+        return "Linha: " + linha + ", " + "Valor: " + valor;
+    }
 }

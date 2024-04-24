@@ -4,7 +4,8 @@
 //Construtor aceita a profundidade global, quantidade de armazenamento no bucket e folder do diretório
 //Constroi inicialmente 2² buckets vazios
 
-import java.util.ArrayList;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class HashingExtensivel {
     
@@ -38,12 +39,29 @@ public class HashingExtensivel {
         
     }
 
-    public void deletarValor(){
+    public void deletarValor(Integer valor){
 
+        var bucket = diretorio.obterBucket(getIndice(valor));
+
+        bucket.carregarBucket();
+
+        bucket.getRegistros().removeIf(registro -> registro.valor == valor);
+
+        bucket.salvarBucket();
+
+        handleReduzirDiretorio(bucket);
     }
 
-    public void buscarValor(){
+    public List<Registro> buscarValor(Integer valor){
 
+        var bucket = diretorio.obterBucket(getIndice(valor));
+
+        bucket.carregarBucket();
+
+        return bucket.getRegistros()
+                     .stream()
+                     .filter(registro -> registro.valor == valor)
+                     .collect(Collectors.toList());
     }
 
     private void CriarDiretorio(String arquivoDiretorio){
@@ -76,10 +94,10 @@ public class HashingExtensivel {
         //A imagem de 00 é 100, a imagem de 1001 é 11001 e assim em diante
         Integer bucketImagem  = bucket.numero + (1 << profundidadeLocal);
 
-        //Numero de repetições do ponteiro que apontam para esse bucket
+        //O step entre cada índice que apontava para o bucket original
         double step = Math.pow(2, profundidadeLocal);
 
-        //Percorre o diretorio inteiro atualizando todos valores repetidos
+        //Percorre o diretorio atualizando ponteiros e profundidades desses buckets
         for(int indice = bucket.numero; indice < diretorio.getLength(); indice += step){
 
             //Vê no primeiro bit relevante se é original ou não imagem
@@ -88,7 +106,6 @@ public class HashingExtensivel {
             //Agora o ponteiro aponta para o novo bucket ao invés do antigo
             if(imagem) diretorio.mudarPonteiro(indice, bucketImagem);
 
-            diretorio.imprimirPonteiros();
             diretorio.incrementarProfundidadeLocal(indice);
         }
 
@@ -107,11 +124,21 @@ public class HashingExtensivel {
         }
     }
 
-    //Função hash a ser definida
+
+
+    /** Para caso a profundidade global seja maior que todas as locais
+     * e seja desnecessário manter ponteiros redundantes agora que esse bucket está vazio**/
+    private void handleReduzirDiretorio(Bucket bucket){
+
+    }
+
+    
+    /**Função hash a ser definida */
     private Integer Hash(Integer valor){
         return valor;
     }
 
+    //**Transforma valor em um indice do diretório usando o hash dele e sua máscara */
     private int getIndice(int valor){
         
         int valorHash  = Hash(valor);
