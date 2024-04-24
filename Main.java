@@ -1,29 +1,15 @@
-class Main {
-    
-    public static void main(String[] args){
- 
+public class Main {
 
-        var algoritmo = new HashingExtensivel(2);
+    public static void main(String[] args) {
 
-        // algoritmo.inserirValor(1, 3);
-        // algoritmo.inserirValor(1, 43);
-        // algoritmo.inserirValor(1, 23);
+        // // Verifica se foi fornecido o arquivo de entrada como argumento
+        // if (args.length < 1) {
+        //     System.out.println("Uso: java Main <arquivo_entrada>");
+        //     return;
+        // }
 
-        // algoritmo.deletarValor(43);
-        
-        //Teste busca
-        algoritmo.buscarValor(2)
-                 .forEach(registro -> {
-                    System.out.println(registro.toString());
-                });
-        
-        
+        var processador = new ProcessadorComandos();
 
-        
-        try{
-            algoritmo.diretorio.armazenarDiretorio("diretorio");
-        }
-        catch(Exception e){}
-
+        processador.processarArquivo("arquivos/in.txt", "arquivos/out.txt");
     }
 }

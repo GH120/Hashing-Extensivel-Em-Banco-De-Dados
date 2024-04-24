@@ -39,17 +39,24 @@ public class HashingExtensivel {
         
     }
 
-    public void deletarValor(Integer valor){
+    //**Retorna quantos valores foram deletados a partir desse */
+    public int deletarValor(Integer valor){
+
+        int tamanhoOriginal;
 
         var bucket = diretorio.obterBucket(getIndice(valor));
 
         bucket.carregarBucket();
+
+        tamanhoOriginal = bucket.getRegistros().size();
 
         bucket.getRegistros().removeIf(registro -> registro.valor == valor);
 
         bucket.salvarBucket();
 
         handleReduzirDiretorio(bucket);
+
+        return tamanhoOriginal - bucket.getRegistros().size();
     }
 
     public List<Registro> buscarValor(Integer valor){
@@ -62,6 +69,13 @@ public class HashingExtensivel {
                      .stream()
                      .filter(registro -> registro.valor == valor)
                      .collect(Collectors.toList());
+    }
+
+    public int profundidadeLocal(Integer valor){
+
+        var bucket = diretorio.obterBucket(getIndice(valor));
+
+        return diretorio.getProfundidade(bucket);
     }
 
     private void CriarDiretorio(String arquivoDiretorio){

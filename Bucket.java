@@ -16,7 +16,7 @@ public class Bucket {
 
         this.numero = numero;
 
-        arquivo   =  Integer.toBinaryString(numero) + ".txt";
+        arquivo   =  "arquivos/" + Integer.toBinaryString(numero) + ".txt";
 
         registros =  new ArrayList<>();
     }
