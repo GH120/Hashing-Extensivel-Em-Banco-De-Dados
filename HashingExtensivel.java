@@ -8,9 +8,9 @@ import java.util.ArrayList;
 
 public class HashingExtensivel {
     
-    Integer   profundidadeGlobal;
+    int   profundidadeGlobal;
     Diretorio diretorio;
-    Integer   BUCKETSIZE = 3;
+    int   BUCKETSIZE = 3;
     
 
     HashingExtensivel(int profundidadeGlobal){
@@ -77,17 +77,18 @@ public class HashingExtensivel {
         Integer bucketImagem  = bucket.numero + (1 << profundidadeLocal);
 
         //Numero de repetições do ponteiro que apontam para esse bucket
-        double step = Math.pow(2, profundidadeGlobal - profundidadeLocal);
+        double step = Math.pow(2, profundidadeLocal);
 
         //Percorre o diretorio inteiro atualizando todos valores repetidos
         for(int indice = bucket.numero; indice < diretorio.getLength(); indice += step){
 
-            //Vê no primeiro bit relevante se é original ou imagem
-            boolean imagem = ((indice >> profundidadeGlobal-profundidadeLocal) & 1) == 1;
+            //Vê no primeiro bit relevante se é original ou não imagem
+            boolean imagem = ((indice >> profundidadeLocal) & 1) == 1;
 
             //Agora o ponteiro aponta para o novo bucket ao invés do antigo
             if(imagem) diretorio.mudarPonteiro(indice, bucketImagem);
 
+            diretorio.imprimirPonteiros();
             diretorio.incrementarProfundidadeLocal(indice);
         }
 

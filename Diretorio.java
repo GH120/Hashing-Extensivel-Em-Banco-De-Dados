@@ -46,6 +46,12 @@
             // Atualiza o diretório com o novo array de ponteiros
             ponteiros = novoDiretorio;
 
+            ArrayList<Integer> novasProfundidades = new ArrayList<>(novoTamanho);
+            novasProfundidades.addAll(profundidadesLocais);
+            novasProfundidades.addAll(profundidadesLocais);
+
+            profundidadesLocais = novasProfundidades;
+
             profundidade += 1;
         }
 
@@ -64,6 +70,12 @@
         public void armazenarDiretorio(String nomeArquivo) throws IOException {
             try (PrintWriter writer = new PrintWriter(new FileWriter(nomeArquivo))) {
                 writer.println("Profundidade global: " + profundidade);
+
+                writer.println("Profundidades locais:");
+                for (Integer profundidadeLocal : profundidadesLocais) {
+                    writer.println(profundidadeLocal);
+                }
+                
                 writer.println("Buckets:");
                 for (int i = 0; i < ponteiros.size(); i++) {
                     writer.println((i + 1) + " - " + ponteiros.get(i));
@@ -74,18 +86,26 @@
         
         public void carregarDiretorio(String nomeArquivo) throws IOException {
             ponteiros.clear(); 
+            profundidadesLocais.clear();
     
             try (BufferedReader reader = new BufferedReader(new FileReader(nomeArquivo))) {
                 String line;
+                boolean readingProfundidadesLocais = false;
                 while ((line = reader.readLine()) != null) {
                     if (line.startsWith("Profundidade global:")) {
                         profundidade = Integer.parseInt(line.substring(line.indexOf(":") + 1).trim());
+                    } else if (line.startsWith("Profundidades locais:")) {
+                        readingProfundidadesLocais = true;
                     } else if (line.startsWith("Buckets:")) {
                         // Ignora esta linha
+                        readingProfundidadesLocais = false;
                     } else {
-                        // Extrai o número do ponteiro e adiciona à lista de ponteiros
-                        int numeroBucket = Integer.parseInt(line.substring(line.indexOf("-") + 1).trim());
-                        ponteiros.add(numeroBucket);
+                        if (readingProfundidadesLocais) {
+                            profundidadesLocais.add(Integer.parseInt(line.trim()));
+                        } else {
+                            int numeroBucket = Integer.parseInt(line.substring(line.indexOf("-") + 1).trim());
+                            ponteiros.add(numeroBucket);
+                        }
                     }
                 }
             }
@@ -95,10 +115,10 @@
         public void imprimirPonteiros() {
             System.out.println("Ponteiros do Diretório:");
             for (int i = 0; i < ponteiros.size(); i++) {
-                System.out.println("Posição " + i + ": " + Integer.toBinaryString(ponteiros.get(i)));
+                System.out.println("Posição " + i + ": Ponteiro -> " + Integer.toBinaryString(ponteiros.get(i)) +
+                                   ", Profundidade local -> " + profundidadesLocais.get(i));
             }
         }
-
         public Integer getProfundidade(Bucket Bucket){
 
             return profundidadesLocais.get(Bucket.numero);

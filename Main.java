@@ -14,9 +14,10 @@ class Main {
 
         var algoritmo = new HashingExtensivel(2);
 
-        algoritmo.inserirValor(1, 22);
-
-
+        algoritmo.inserirValor(1, 3);
+        algoritmo.inserirValor(1, 43);
+        algoritmo.inserirValor(1, 23);
+        
 
         
         try{
