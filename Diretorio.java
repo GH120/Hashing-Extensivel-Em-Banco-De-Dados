@@ -24,14 +24,6 @@
             profundidadesLocais = new ArrayList<>(Collections.nCopies(ponteiros.size(), depth));
 
         }
-        
-        public void mudarPonteiro(int idBucket, int indice){
-            ponteiros.set(indice, idBucket);
-        }
-
-        public void incrementarProfundidadeLocal(int indice){
-            profundidadesLocais.set(indice, profundidadesLocais.get(indice) + 1);
-        }
     
         // Método para obter um bucket a partir do número guardado na posição 'i' da lista
         public Bucket obterBucket(int indice) {
@@ -55,6 +47,18 @@
             ponteiros = novoDiretorio;
 
             profundidade += 1;
+        }
+
+        public int getLength(){
+            return ponteiros.size();
+        }
+
+        public void mudarPonteiro(int idBucket, int indice){
+            ponteiros.set(indice, idBucket);
+        }
+
+        public void incrementarProfundidadeLocal(int indice){
+            profundidadesLocais.set(indice, profundidadesLocais.get(indice) + 1);
         }
 
         public void armazenarDiretorio(String nomeArquivo) throws IOException {

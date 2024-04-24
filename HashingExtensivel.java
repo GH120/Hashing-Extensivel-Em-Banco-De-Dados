@@ -21,7 +21,7 @@ public class HashingExtensivel {
 
     }
 
-    void inserirValor(Integer linha, Integer valor){
+    public void inserirValor(Integer linha, Integer valor){
 
         var bucket = diretorio.obterBucket(getIndice(valor));
 
@@ -38,15 +38,15 @@ public class HashingExtensivel {
         
     }
 
-    void deletarValor(){
+    public void deletarValor(){
 
     }
 
-    void buscarValor(){
+    public void buscarValor(){
 
     }
 
-    void CriarDiretorio(String arquivoDiretorio){
+    private void CriarDiretorio(String arquivoDiretorio){
 
         diretorio = new Diretorio(profundidadeGlobal);
 
@@ -63,7 +63,7 @@ public class HashingExtensivel {
         }
     }
 
-    void handleOverflow(Bucket bucket, int linha, int valor){
+    private void handleOverflow(Bucket bucket, int linha, int valor){
 
         int profundidadeLocal = diretorio.getProfundidade(bucket);
 
@@ -74,15 +74,22 @@ public class HashingExtensivel {
         }
         
         //A imagem de 00 é 100, a imagem de 1001 é 11001 e assim em diante
-        //O novo índice vai ser o mesmo do anterior, mas com um bit a direita
-        Integer novoIndice  = bucket.numero + (1 << profundidadeLocal);
+        Integer bucketImagem  = bucket.numero + (1 << profundidadeLocal);
 
-        //Agora o ponteiro aponta para o novo bucket ao invés do antigo
-        //PS: só funciona para diferenças 1 de profundidade
-        // Pois se tiver 64 copias do mesmo bucket vou ter que alterar metade
-        diretorio.mudarPonteiro(novoIndice, novoIndice);
-        diretorio.imprimirPonteiros();
-        // diretorio.incrementarProfundidadeLocal(novoIndice);
+        //Numero de repetições do ponteiro que apontam para esse bucket
+        double step = Math.pow(2, profundidadeGlobal - profundidadeLocal);
+
+        //Percorre o diretorio inteiro atualizando todos valores repetidos
+        for(int indice = bucket.numero; indice < diretorio.getLength(); indice += step){
+
+            //Vê no primeiro bit relevante se é original ou imagem
+            boolean imagem = ((indice >> profundidadeGlobal-profundidadeLocal) & 1) == 1;
+
+            //Agora o ponteiro aponta para o novo bucket ao invés do antigo
+            if(imagem) diretorio.mudarPonteiro(indice, bucketImagem);
+
+            diretorio.incrementarProfundidadeLocal(indice);
+        }
 
 
         //Copio os registros do bucket para depois esvaziá-lo
@@ -90,26 +97,21 @@ public class HashingExtensivel {
         bucket.limparRegistros();
         bucket.salvarBucket();
 
-
-        //Agora para todos esses registros eu insiro eles de novo usando a inserção
-        //Porque isso funciona? 
-        //Pois obrigatoriamente esses valores estavam no Bucket original ou em sua imagem
-        //Agora eu divido eles em dois buckets levando em conta mais um bit de profundidade
-
-        //O valor a ser inserido além dos que já existem
+        //O novo valor a ser inserido além dos que já existem
         registros.add(new Registro(linha, valor));
 
+        //Reinsere os registros agora dividindo entre os dois buckets
         for(Registro registro : registros){
             inserirValor(registro.linha, registro.valor);
         }
     }
 
     //Função hash a ser definida
-    Integer Hash(Integer valor){
+    private Integer Hash(Integer valor){
         return valor;
     }
 
-    int getIndice(int valor){
+    private int getIndice(int valor){
         
         int valorHash  = Hash(valor);
 
