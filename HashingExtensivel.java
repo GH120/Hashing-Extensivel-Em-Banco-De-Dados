@@ -146,91 +146,100 @@ public class HashingExtensivel {
     //Caso 2: vários buckets -> decrementa profundidade do bucket irmão e dele mesmo.
     private void handleReduzirDiretorio(Bucket bucket){
 
-        //diretorio.imprimirPonteiros();
-        System.out.println("Profundidade global: " + profundidadeGlobal);
-        System.out.println("Bucket: " + bucket.numero);
+        boolean vazio = bucket.getRegistros().size() == 0;
 
-        if (bucket.getRegistros().size() != 0) return;
+        if (!vazio) return;
         
         int profundidadeLocal = diretorio.getProfundidade(bucket);
 
-        boolean ehImagem = (bucket.numero >> (profundidadeLocal - 1)) == 1;
+        boolean ehImagem   = (bucket.numero >> (profundidadeLocal - 1)) == 1;
 
         int ponteiroOriginal = bucket.numero; 
         int ponteiroIrmao    = (ehImagem) ? bucket.numero - (1 << (profundidadeLocal-1)) : bucket.numero + (1 << (profundidadeLocal - 1));
         
+        int ponteiroOG     = (ehImagem)? ponteiroIrmao : ponteiroOriginal;
+        int ponteiroImagem = (ehImagem)? ponteiroOriginal : ponteiroIrmao;
+
         boolean naoTemImagem = ponteiroIrmao > Math.pow(2.0, profundidadeGlobal);
 
         if(naoTemImagem) return;
 
-        //Decrementa profundidade do bucket irmão e dele mesmo
-        diretorio.decrementarProfundidadeLocal(ponteiroIrmao);
-        diretorio.decrementarProfundidadeLocal(ponteiroOriginal);
+        //Bucket é descartado
+        bucket.deletarBucket();
 
-        //Se o bucket for o original e estiver vazio
-        //Então retiramos todos os valores do bucket imagem e colocamos nele
-        if (!ehImagem){
-            
-            //Obtem os registros do bucket imagem, que é o irmão, e depois deleta ele
-            bucket = diretorio.obterBucket(ponteiroIrmao);
+        bucket = null;
 
-            List<Registro> registros = bucket.getRegistros();
+        //Obtem os registros do bucket imagem
+        Bucket bucketImagem = diretorio.obterBucket(ponteiroImagem);
 
-            bucket.deletarBucket();
+        //O step entre cada índice que apontava para o bucket original 
+        double step = Math.pow(2, profundidadeLocal-1);
+
+        //Percorre o diretorio atualizando ponteiros e profundidades desses buckets
+        for(int indice = ponteiroOG; indice < diretorio.getLength(); indice += step){
 
             //Ponteiro para o bucket imagem agora aponta para o original
-            diretorio.mudarPonteiro(ponteiroIrmao, ponteiroOriginal);
+            diretorio.mudarPonteiro(indice, ponteiroOG);
 
-            //Inserimos todos os valores de volta
-            //Como o ponteiro aponta para o original, ele vai ser inserido nele
-            for(Registro registro : registros){
+            diretorio.decrementarProfundidadeLocal(indice);
+        }
+
+        //Se o bucket for o original e estiver vazio
+        //Então retiramos todos os valores do bucket imagem e colocamos nele, deletando o imagem
+        boolean bucketDeletadoEraOriginal =  !ehImagem;
+
+        if (bucketDeletadoEraOriginal){
+
+            var registros = new ArrayList<Registro>(bucketImagem.getRegistros());
+
+            bucketImagem.deletarBucket(); 
+
+            for(var registro : registros){
                 inserirValor(registro.linha, registro.valor);
             }
         }
-        else{
-            //Se for um bucket imagem e está vazio, é só deletar
-            bucket.deletarBucket();
+       
 
-            //Ponteiro para o bucket imagem agora aponta para o original
-            diretorio.mudarPonteiro(ponteiroIrmao, ponteiroOriginal);
-        }
-
-        if (profundidadeLocal == profundidadeGlobal){
+        // if (profundidadeLocal == profundidadeGlobal){
             
-            int maiorProfundidade = Collections.max(diretorio.getProfundidadesLocais());
+        //     int maiorProfundidade = Collections.max(diretorio.getProfundidadesLocais());
 
-            //Se a maior profundidade for 
-            if(maiorProfundidade < profundidadeGlobal){
+        //     //Se a maior profundidade for 
+        //     if(maiorProfundidade < profundidadeGlobal){
                 
-                diretorio.dividirDiretorio();
+        //         diretorio.dividirDiretorio();
 
-                profundidadeGlobal--;
-            }
-        }
+        //         profundidadeGlobal--;
+        //     }
+        // }
         
+        // //Se ele for 
+        // handleReduzirDiretorio(diretorio.obterBucket(ponteiroOG));
 
-        // Pega o novo bucket e testa aplica a função novamente
-        int novaProfundidadeLocal = profundidadeLocal - 1;
-        if(novaProfundidadeLocal >= 2){
-            int mascara = ((1 << (novaProfundidadeLocal)) - 1);
-            int novoPonteiro = ponteiroOriginal & mascara;
+        // // Pega o novo bucket e testa aplica a função novamente
+        // int novaProfundidadeLocal = profundidadeLocal - 1;
+        // if(novaProfundidadeLocal >= 2){
+        //     int mascara = ((1 << (novaProfundidadeLocal)) - 1);
+        //     int novoPonteiro = ponteiroOriginal & mascara;
 
-            // POR ALGUM MOTIVO QUANDO TENTO OBTER BUCKET NO PONTEIRO 1 ELE OBTEM O BUCKET 5
-            bucket = diretorio.obterBucket(novoPonteiro);
+        //     // POR ALGUM MOTIVO QUANDO TENTO OBTER BUCKET NO PONTEIRO 1 ELE OBTEM O BUCKET 5
+        //     bucket = diretorio.obterBucket(novoPonteiro);
 
-            if (bucket.getRegistros().size() != 0){
+        //     //Estiver cheio
+        //     if (bucket.getRegistros().size() != 0){
 
-                ehImagem = (novoPonteiro >> (novaProfundidadeLocal - 1)) == 1;
+        //         //Eh
+        //         ehImagem = (novoPonteiro >> (novaProfundidadeLocal - 1)) == 1;
  
-                ponteiroIrmao = (ehImagem) ? novoPonteiro - (1 << (novaProfundidadeLocal - 1)) : novoPonteiro + (1 << (novaProfundidadeLocal - 1));
+        //         ponteiroIrmao = (ehImagem) ? novoPonteiro - (1 << (novaProfundidadeLocal - 1)) : novoPonteiro + (1 << (novaProfundidadeLocal - 1));
 
-                novoPonteiro = ponteiroIrmao & mascara;
-                bucket = diretorio.obterBucket(novoPonteiro);
-                if(bucket.getRegistros().size() != 0) return;
-            }
+        //         novoPonteiro = ponteiroIrmao & mascara;
+        //         bucket = diretorio.obterBucket(novoPonteiro);
+        //         if(bucket.getRegistros().size() != 0) return;
+        //     }
 
-            handleReduzirDiretorio(bucket);
-        }
+        //     handleReduzirDiretorio(bucket);
+        // }
     }
 
     
