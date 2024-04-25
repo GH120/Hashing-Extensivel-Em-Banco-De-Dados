@@ -1,4 +1,3 @@
-    import java.util.ArrayList;
     import java.io.*;
     import java.util.*;
     
@@ -13,7 +12,7 @@
 
         public  int profundidade;
         private ArrayList<Integer> ponteiros; // Lista de ponteiros para os números dos arquivos dos buckets
-        private ArrayList<Integer> profundidadesLocais;
+        public ArrayList<Integer> profundidadesLocais;
 
         public Diretorio(int depth) {
 
@@ -55,6 +54,22 @@
             profundidade += 1;
         }
 
+        public void dividirDiretorio() {
+
+            int tamanhoAtual = ponteiros.size();
+            int novoTamanho = Math.floorDiv(tamanhoAtual, 2);
+            
+            ArrayList<Integer> novosPonteiros = new ArrayList<>(ponteiros.subList(0, novoTamanho));;
+
+            ArrayList<Integer> novasProfundidades = new ArrayList<>(profundidadesLocais.subList(0, novoTamanho));;
+
+            ponteiros = novosPonteiros;
+
+            profundidadesLocais = novasProfundidades;
+
+            profundidade -= 1;
+        }
+
         public int getLength(){
             return ponteiros.size();
         }
@@ -65,6 +80,10 @@
 
         public void incrementarProfundidadeLocal(int indice){
             profundidadesLocais.set(indice, profundidadesLocais.get(indice) + 1);
+        }
+
+        public void decrementarProfundidadeLocal(int indice){
+            profundidadesLocais.set(indice, profundidadesLocais.get(indice) - 1);
         }
 
         public void armazenarDiretorio(String nomeArquivo) throws IOException {
