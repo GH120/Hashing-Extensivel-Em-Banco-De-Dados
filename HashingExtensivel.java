@@ -148,36 +148,58 @@ public class HashingExtensivel {
     //Caso 1: só dois bucket -> divide diretório e decrementa profundidade bucket original
     //Caso 2: vários buckets -> decrementa profundidade do bucket irmão e dele mesmo.
     private void handleReduzirDiretorio(Bucket bucket){
-        //Decrementa profundidade do bucket irmão e dele mesmo
-        if (bucket.getRegistros().size() != 0)
-            return;
+
+        if (bucket.getRegistros().size() != 0) return;
         
         int profundidadeLocal = diretorio.getProfundidade(bucket);
 
         boolean ehImagem = (bucket.numero >> profundidadeLocal) == 1;
 
-        int ponteiroIrmao = (ehImagem) ? bucket.numero - (1 << profundidadeLocal) : bucket.numero + (1 << profundidadeLocal);
+        int ponteiroOriginal = bucket.numero; 
+        int ponteiroIrmao    = (ehImagem) ? bucket.numero - (1 << profundidadeLocal) : bucket.numero + (1 << profundidadeLocal);
        
+        //Decrementa profundidade do bucket irmão e dele mesmo
         diretorio.decrementarProfundidadeLocal(ponteiroIrmao);
-        diretorio.decrementarProfundidadeLocal(bucket.numero);
+        diretorio.decrementarProfundidadeLocal(ponteiroOriginal);
+
+        //Se o bucket for o original e estiver vazio
+        //Então retiramos todos os valores do bucket imagem e colocamos nele
+        if (!ehImagem){
+            
+            //Obtem os registros do bucket imagem, que é o irmão, e depois deleta ele
+            bucket = diretorio.obterBucket(ponteiroIrmao);
+
+            List<Registro> registros = bucket.getRegistros();
+
+            bucket.deletarBucket();
+
+            //Ponteiro para o bucket imagem agora aponta para o original
+            diretorio.mudarPonteiro(ponteiroIrmao, ponteiroOriginal);
+
+            //Inserimos todos os valores de volta
+            //Como o ponteiro aponta para o original, ele vai ser inserido nele
+            for(Registro registro : registros){
+                inserirValor(registro.linha, registro.valor);
+            }
+        }
+        else{
+            //Se for um bucket imagem e está vazio, é só deletar
+            bucket.deletarBucket();
+
+            //Ponteiro para o bucket imagem agora aponta para o original
+            diretorio.mudarPonteiro(ponteiroIrmao, ponteiroOriginal);
+        }
 
         if (profundidadeLocal == profundidadeGlobal){
             
-            if (!ehImagem){
+            int maiorProfundidade = Collections.max(diretorio.getProfundidadesLocais());
+
+            //Se a maior profundidade for 
+            if(maiorProfundidade < profundidadeGlobal){
                 
-                bucket = diretorio.obterBucket(ponteiroIrmao);
+                diretorio.dividirDiretorio();
 
-                List<Registro> registros = bucket.getRegistros();
-
-                bucket.limparRegistros();
-                bucket.salvarBucket();
-
-                if(Collections.max(diretorio.profundidadesLocais) < profundidadeGlobal)
-                    diretorio.dividirDiretorio();
-
-                for(Registro registro : registros){
-                    inserirValor(registro.linha, registro.valor);
-                }
+                profundidadeGlobal--;
             }
         }
     }

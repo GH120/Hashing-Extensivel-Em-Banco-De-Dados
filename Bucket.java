@@ -3,6 +3,7 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -68,6 +69,25 @@ public class Bucket {
 
         }
         catch(Exception e){}
+    }
+
+    public void deletarBucket(){
+
+        limparRegistros();
+
+        var arquivoTXT = new File(arquivo);
+
+        if(!arquivoTXT.exists()){
+            System.out.println("ERRO, ARQUIVO INEXISTENTE: " + arquivo);
+            return;
+        }
+
+        boolean deletado = arquivoTXT.delete();
+
+        if(!deletado){
+            System.out.println("ERRO, FALHA EM DELETAR ARQUIVO: " + arquivo);
+            return;
+        }
     }
 
     public void limparRegistros() {

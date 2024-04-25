@@ -12,7 +12,7 @@
 
         public  int profundidade;
         private ArrayList<Integer> ponteiros; // Lista de ponteiros para os números dos arquivos dos buckets
-        public ArrayList<Integer> profundidadesLocais;
+        private ArrayList<Integer> profundidadesLocais;
 
         public Diretorio(int depth) {
 
@@ -141,6 +141,10 @@
         public Integer getProfundidade(Bucket Bucket){
 
             return profundidadesLocais.get(Bucket.numero);
+        }
+
+        public List<Integer> getProfundidadesLocais(){
+            return profundidadesLocais;
         }
 
         private ArrayList<Integer> criarPonteiros(int profundidade){
