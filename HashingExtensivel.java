@@ -148,7 +148,38 @@ public class HashingExtensivel {
     //Caso 1: só dois bucket -> divide diretório e decrementa profundidade bucket original
     //Caso 2: vários buckets -> decrementa profundidade do bucket irmão e dele mesmo.
     private void handleReduzirDiretorio(Bucket bucket){
+        //Decrementa profundidade do bucket irmão e dele mesmo
+        if (bucket.getRegistros().size() != 0)
+            return;
+        
+        int profundidadeLocal = diretorio.getProfundidade(bucket);
 
+        boolean ehImagem = (bucket.numero >> profundidadeLocal) == 1;
+
+        int ponteiroIrmao = (ehImagem) ? bucket.numero - (1 << profundidadeLocal) : bucket.numero + (1 << profundidadeLocal);
+       
+        diretorio.decrementarProfundidadeLocal(ponteiroIrmao);
+        diretorio.decrementarProfundidadeLocal(bucket.numero);
+
+        if (profundidadeLocal == profundidadeGlobal){
+            
+            if (!ehImagem){
+                
+                bucket = diretorio.obterBucket(ponteiroIrmao);
+
+                List<Registro> registros = bucket.getRegistros();
+
+                bucket.limparRegistros();
+                bucket.salvarBucket();
+
+                if(Collections.max(diretorio.profundidadesLocais) < profundidadeGlobal)
+                    diretorio.dividirDiretorio();
+
+                for(Registro registro : registros){
+                    inserirValor(registro.linha, registro.valor);
+                }
+            }
+        }
     }
 
     
