@@ -18,7 +18,7 @@ public class HashingExtensivel {
 
         this.profundidadeGlobal = profundidadeGlobal;
 
-        this.CriarDiretorio("diretorio");
+        this.CriarDiretorio("arquivos/diretorio");
 
     }
 

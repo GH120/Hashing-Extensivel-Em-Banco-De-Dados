@@ -77,31 +77,24 @@ public class ProcessadorComandos {
                 switch (operacao) {
                     case "INC":
 
+                        //Procura todos os registros com esse ano no csv
                         for(Registro registro : procurarNoCSV(valor)){
                             hashingExtensivel.inserirValor(registro.linha, registro.valor); 
-
-                            System.out.println(registro.toString());
                         }
                         
                         writer.write("INC:" + valor + "/" + hashingExtensivel.profundidadeGlobal + "," + hashingExtensivel.profundidadeLocal(valor));
                         writer.newLine();
                         break;
                     case "REM":
-                        int valoresDeletados  = 0;
 
-                        for(Registro registro : procurarNoCSV(valor)){
-                            valoresDeletados += hashingExtensivel.deletarValor(registro.valor); 
-                        }
+                        int valoresDeletados = hashingExtensivel.deletarValor(valor); 
 
                         writer.write("REM:" + valor + "/" + valoresDeletados + "," + hashingExtensivel.profundidadeGlobal + "," + hashingExtensivel.profundidadeLocal(valor));
                         writer.newLine();
                         break;
                     case "BUS":
-                        int quantidadeSelecionada = 0;
 
-                        for(Registro registro : procurarNoCSV(valor)){
-                            quantidadeSelecionada += hashingExtensivel.buscarValor(registro.valor).size();
-                        }
+                        int quantidadeSelecionada = hashingExtensivel.buscarValor(valor).size();
 
                         writer.write("BUS:" + valor + "/" + quantidadeSelecionada);
                         writer.newLine();
@@ -128,10 +121,6 @@ public class ProcessadorComandos {
 
                 int RegistroAno   =  Integer.parseInt(campos[2]);
                 int RegistroLinha =  Integer.parseInt(campos[0]);
-
-                System.out.println(RegistroAno == ano);
-                System.out.println(ano);
-                System.out.println(RegistroAno);
 
                 //Se o registro lido na tabela csv tem o ano procurado, adiciona ele a
                 if(RegistroAno == ano){
