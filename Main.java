@@ -21,5 +21,10 @@ public class Main {
                                                 );
 
         processador.processarArquivo();
+        
+        try{
+            processador.hashingExtensivel.diretorio.armazenarDiretorio("arquivos/diretorio");
+        }
+        catch(Exception e){}
     }
 }
