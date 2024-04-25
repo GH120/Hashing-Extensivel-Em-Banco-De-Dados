@@ -163,9 +163,15 @@ public class HashingExtensivel {
 
         if(naoTemImagem) return;
 
-        //Decrementa profundidade do bucket irmão e dele mesmo
-        diretorio.decrementarProfundidadeLocal(ponteiroIrmao);
-        diretorio.decrementarProfundidadeLocal(ponteiroOriginal);
+        //O step entre cada índice que apontava para o bucket original 
+        double step = Math.pow(2, profundidadeLocal-1);
+
+        //Percorre o diretorio atualizando ponteiros e profundidades desses buckets
+        for(int indice = ponteiroOriginal; indice < diretorio.getLength(); indice += step){
+
+            //Ponteiro para o bucket imagem agora aponta para o original
+            diretorio.decrementarProfundidadeLocal(indice);
+        }
 
         //Se o bucket for o original e estiver vazio
         //Então retiramos todos os valores do bucket imagem e colocamos nele
@@ -178,8 +184,11 @@ public class HashingExtensivel {
 
             bucket.deletarBucket();
 
-            //Ponteiro para o bucket imagem agora aponta para o original
-            diretorio.mudarPonteiro(ponteiroIrmao, ponteiroOriginal);
+            //Percorre o diretorio atualizando ponteiros e profundidades desses buckets
+            for(int indice = ponteiroOriginal; indice < diretorio.getLength(); indice += step){
+                //Ponteiro para o bucket imagem agora aponta para o original
+                diretorio.mudarPonteiro(indice, ponteiroOriginal);
+            }
 
             //Inserimos todos os valores de volta
             //Como o ponteiro aponta para o original, ele vai ser inserido nele
@@ -190,6 +199,12 @@ public class HashingExtensivel {
         else{
             //Se for um bucket imagem e está vazio, é só deletar
             bucket.deletarBucket();
+
+            //Percorre o diretorio atualizando ponteiros e profundidades desses buckets
+            for(int indice = ponteiroOriginal; indice < diretorio.getLength(); indice += step){
+                //Ponteiro para o bucket imagem agora aponta para o original
+                diretorio.mudarPonteiro(indice, ponteiroOriginal);
+            }
 
             //Ponteiro para o bucket imagem agora aponta para o original
             diretorio.mudarPonteiro(ponteiroIrmao, ponteiroOriginal);
