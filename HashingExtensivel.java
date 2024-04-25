@@ -142,6 +142,11 @@ public class HashingExtensivel {
 
     /** Para caso a profundidade global seja maior que todas as locais
      * e seja desnecessário manter ponteiros redundantes agora que esse bucket está vazio**/
+
+    //Verifica se tem dois e somente dois buckets com profundidade global
+    //Verifica se esvaziou um dos buckets
+    //Caso 1: só dois bucket -> divide diretório e decrementa profundidade bucket original
+    //Caso 2: vários buckets -> decrementa profundidade do bucket irmão e dele mesmo.
     private void handleReduzirDiretorio(Bucket bucket){
 
     }

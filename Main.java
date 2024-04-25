@@ -1,10 +1,11 @@
 public class Main {
 
-    //Ligar csv aos registros
-    //Ligar operações ao csv
     //Mudar nome dos arquivos para adicionar 0 a esquerda
     //Colocar while no duplicar bucket, 2005 e 3*2013 -> Feito por naturalidade
     //Tornar bucket singleton
+    //Lidar com caso de divisão do diretório: output errado no ultimo remover
+
+    //93% completo
     public static void main(String[] args) {
 
         // // Verifica se foi fornecido o arquivo de entrada como argumento
@@ -13,8 +14,12 @@ public class Main {
         //     return;
         // }
 
-        var processador = new ProcessadorComandos();
+        var processador = new ProcessadorComandos(
+                                                "arquivos/in.txt", 
+                                                "arquivos/out.txt",
+                                                "arquivos/compras.csv" 
+                                                );
 
-        processador.processarArquivo("arquivos/in.txt", "arquivos/out.txt");
+        processador.processarArquivo();
     }
 }
