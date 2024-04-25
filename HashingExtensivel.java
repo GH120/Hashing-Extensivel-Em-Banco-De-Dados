@@ -42,13 +42,11 @@ public class HashingExtensivel {
     //**Retorna quantos valores foram deletados a partir desse */
     public int deletarValor(Integer valor){
 
-        int tamanhoOriginal;
-
         var bucket = diretorio.obterBucket(getIndice(valor));
 
         bucket.carregarBucket();
 
-        tamanhoOriginal = bucket.getRegistros().size();
+        int tamanhoOriginal = bucket.getRegistros().size();
 
         bucket.getRegistros().removeIf(registro -> registro.valor == valor);
 
@@ -153,14 +151,18 @@ public class HashingExtensivel {
         
         int profundidadeLocal = diretorio.getProfundidade(bucket);
 
-        boolean ehImagem = (bucket.numero >> profundidadeLocal) == 1;
+        boolean ehImagem = (bucket.numero >> (profundidadeLocal)) == 1;
 
         int ponteiroOriginal = bucket.numero; 
-        int ponteiroIrmao    = (ehImagem) ? bucket.numero - (1 << profundidadeLocal) : bucket.numero + (1 << profundidadeLocal);
-       
+        int ponteiroIrmao    = (ehImagem) ? bucket.numero - (1 << (profundidadeLocal-1)) : bucket.numero + (1 << (profundidadeLocal));
+        
+        boolean naoTemImagem =  ponteiroIrmao > Math.pow(2.0, profundidadeGlobal);
+
+        if(naoTemImagem) return;
+
         //Decrementa profundidade do bucket irmão e dele mesmo
-        diretorio.decrementarProfundidadeLocal(ponteiroIrmao);
-        diretorio.decrementarProfundidadeLocal(ponteiroOriginal);
+        // diretorio.decrementarProfundidadeLocal(ponteiroIrmao);
+        // diretorio.decrementarProfundidadeLocal(ponteiroOriginal);
 
         //Se o bucket for o original e estiver vazio
         //Então retiramos todos os valores do bucket imagem e colocamos nele
@@ -190,18 +192,18 @@ public class HashingExtensivel {
             diretorio.mudarPonteiro(ponteiroIrmao, ponteiroOriginal);
         }
 
-        if (profundidadeLocal == profundidadeGlobal){
+        // if (profundidadeLocal == profundidadeGlobal){
             
-            int maiorProfundidade = Collections.max(diretorio.getProfundidadesLocais());
+        //     int maiorProfundidade = Collections.max(diretorio.getProfundidadesLocais());
 
-            //Se a maior profundidade for 
-            if(maiorProfundidade < profundidadeGlobal){
+        //     //Se a maior profundidade for 
+        //     if(maiorProfundidade < profundidadeGlobal){
                 
-                diretorio.dividirDiretorio();
+        //         diretorio.dividirDiretorio();
 
-                profundidadeGlobal--;
-            }
-        }
+        //         profundidadeGlobal--;
+        //     }
+        // }
     }
 
     
