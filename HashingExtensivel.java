@@ -71,7 +71,12 @@ public class HashingExtensivel {
 
     public int profundidadeLocal(Integer valor){
 
+        System.out.println(getIndice(valor));
+
+
         var bucket = diretorio.obterBucket(getIndice(valor));
+
+
 
         return diretorio.getProfundidade(bucket);
     }
@@ -149,15 +154,17 @@ public class HashingExtensivel {
         boolean vazio = bucket.getRegistros().size() == 0;
 
         if (!vazio) return;
-        
+
         int profundidadeLocal = diretorio.getProfundidade(bucket);
+
+        if(profundidadeLocal == 2) return;
 
         boolean ehImagem   = (bucket.numero >> (profundidadeLocal - 1)) == 1;
 
         int ponteiroOriginal = bucket.numero; 
         int ponteiroIrmao    = (ehImagem) ? bucket.numero - (1 << (profundidadeLocal-1)) : bucket.numero + (1 << (profundidadeLocal - 1));
         
-        int ponteiroOG     = (ehImagem)? ponteiroIrmao : ponteiroOriginal;
+        int ponteiroOG     = (ehImagem)? ponteiroIrmao    : ponteiroOriginal;
         int ponteiroImagem = (ehImagem)? ponteiroOriginal : ponteiroIrmao;
 
         boolean naoTemImagem = ponteiroIrmao > Math.pow(2.0, profundidadeGlobal);
@@ -179,12 +186,28 @@ public class HashingExtensivel {
         for(int indice = ponteiroOG; indice < diretorio.getLength(); indice += step){
 
             //Ponteiro para o bucket imagem agora aponta para o original
-            diretorio.mudarPonteiro(indice, ponteiroOG);
+            diretorio.mudarPonteiro(ponteiroOG, indice);
 
             diretorio.decrementarProfundidadeLocal(indice);
         }
 
-        //Se o bucket for o original e estiver vazio
+        
+        if (profundidadeLocal == profundidadeGlobal){
+
+            
+            int maiorProfundidade = Collections.max(diretorio.getProfundidadesLocais());
+
+            //Se a maior profundidade for 
+            if(maiorProfundidade < profundidadeGlobal){
+
+                diretorio.dividirDiretorio();
+
+                profundidadeGlobal -= 1;
+
+            }
+        }
+        
+         //Se o bucket for o original e estiver vazio
         //Então retiramos todos os valores do bucket imagem e colocamos nele, deletando o imagem
         boolean bucketDeletadoEraOriginal =  !ehImagem;
 
@@ -198,48 +221,30 @@ public class HashingExtensivel {
                 inserirValor(registro.linha, registro.valor);
             }
         }
-       
 
-        // if (profundidadeLocal == profundidadeGlobal){
-            
-        //     int maiorProfundidade = Collections.max(diretorio.getProfundidadesLocais());
+        // Pega o novo bucket e testa aplica a função novamente
+        int novaProfundidadeLocal = profundidadeLocal - 1;
+        if(novaProfundidadeLocal >= 2){
+            int mascara = ((1 << (novaProfundidadeLocal)) - 1);
+            int novoPonteiro = ponteiroOriginal & mascara;
 
-        //     //Se a maior profundidade for 
-        //     if(maiorProfundidade < profundidadeGlobal){
-                
-        //         diretorio.dividirDiretorio();
+            bucket = diretorio.obterBucket(novoPonteiro);
 
-        //         profundidadeGlobal--;
-        //     }
-        // }
-        
-        // //Se ele for 
-        // handleReduzirDiretorio(diretorio.obterBucket(ponteiroOG));
+            //Estiver cheio
+            if (bucket.getRegistros().size() != 0){
 
-        // // Pega o novo bucket e testa aplica a função novamente
-        // int novaProfundidadeLocal = profundidadeLocal - 1;
-        // if(novaProfundidadeLocal >= 2){
-        //     int mascara = ((1 << (novaProfundidadeLocal)) - 1);
-        //     int novoPonteiro = ponteiroOriginal & mascara;
-
-        //     // POR ALGUM MOTIVO QUANDO TENTO OBTER BUCKET NO PONTEIRO 1 ELE OBTEM O BUCKET 5
-        //     bucket = diretorio.obterBucket(novoPonteiro);
-
-        //     //Estiver cheio
-        //     if (bucket.getRegistros().size() != 0){
-
-        //         //Eh
-        //         ehImagem = (novoPonteiro >> (novaProfundidadeLocal - 1)) == 1;
+                //Eh
+                ehImagem = (novoPonteiro >> (novaProfundidadeLocal - 1)) == 1;
  
-        //         ponteiroIrmao = (ehImagem) ? novoPonteiro - (1 << (novaProfundidadeLocal - 1)) : novoPonteiro + (1 << (novaProfundidadeLocal - 1));
+                ponteiroIrmao = (ehImagem) ? novoPonteiro - (1 << (novaProfundidadeLocal - 1)) : novoPonteiro + (1 << (novaProfundidadeLocal - 1));
 
-        //         novoPonteiro = ponteiroIrmao & mascara;
-        //         bucket = diretorio.obterBucket(novoPonteiro);
-        //         if(bucket.getRegistros().size() != 0) return;
-        //     }
+                novoPonteiro = ponteiroIrmao & mascara;
+                bucket = diretorio.obterBucket(novoPonteiro);
+                if(bucket.getRegistros().size() != 0) return;
+            }
 
-        //     handleReduzirDiretorio(bucket);
-        // }
+            handleReduzirDiretorio(bucket);
+        }
     }
 
     
