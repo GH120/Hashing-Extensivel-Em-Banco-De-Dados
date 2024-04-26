@@ -71,7 +71,12 @@ public class HashingExtensivel {
 
     public int profundidadeLocal(Integer valor){
 
+        System.out.println(getIndice(valor));
+
+
         var bucket = diretorio.obterBucket(getIndice(valor));
+
+
 
         return diretorio.getProfundidade(bucket);
     }
@@ -146,83 +151,76 @@ public class HashingExtensivel {
     //Caso 2: vários buckets -> decrementa profundidade do bucket irmão e dele mesmo.
     private void handleReduzirDiretorio(Bucket bucket){
 
-        //diretorio.imprimirPonteiros();
-        System.out.println("Profundidade global: " + profundidadeGlobal);
-        System.out.println("Bucket: " + bucket.numero);
+        boolean vazio = bucket.getRegistros().size() == 0;
 
-        if (bucket.getRegistros().size() != 0) return;
-        
+        if (!vazio) return;
+
         int profundidadeLocal = diretorio.getProfundidade(bucket);
 
-        boolean ehImagem = (bucket.numero >> (profundidadeLocal - 1)) == 1;
+        if(profundidadeLocal == 2) return;
+
+        boolean ehImagem   = (bucket.numero >> (profundidadeLocal - 1)) == 1;
 
         int ponteiroOriginal = bucket.numero; 
         int ponteiroIrmao    = (ehImagem) ? bucket.numero - (1 << (profundidadeLocal-1)) : bucket.numero + (1 << (profundidadeLocal - 1));
         
+        int ponteiroOG     = (ehImagem)? ponteiroIrmao    : ponteiroOriginal;
+        int ponteiroImagem = (ehImagem)? ponteiroOriginal : ponteiroIrmao;
+
         boolean naoTemImagem = ponteiroIrmao > Math.pow(2.0, profundidadeGlobal);
 
         if(naoTemImagem) return;
+
+        //Bucket é descartado
+        bucket.deletarBucket();
+
+        bucket = null;
+
+        //Obtem os registros do bucket imagem
+        Bucket bucketImagem = diretorio.obterBucket(ponteiroImagem);
 
         //O step entre cada índice que apontava para o bucket original 
         double step = Math.pow(2, profundidadeLocal-1);
 
         //Percorre o diretorio atualizando ponteiros e profundidades desses buckets
-        for(int indice = ponteiroOriginal; indice < diretorio.getLength(); indice += step){
+        for(int indice = ponteiroOG; indice < diretorio.getLength(); indice += step){
 
             //Ponteiro para o bucket imagem agora aponta para o original
+            diretorio.mudarPonteiro(ponteiroOG, indice);
+
             diretorio.decrementarProfundidadeLocal(indice);
         }
 
-        //Se o bucket for o original e estiver vazio
-        //Então retiramos todos os valores do bucket imagem e colocamos nele
-        if (!ehImagem){
-            
-            //Obtem os registros do bucket imagem, que é o irmão, e depois deleta ele
-            bucket = diretorio.obterBucket(ponteiroIrmao);
-
-            List<Registro> registros = bucket.getRegistros();
-
-            bucket.deletarBucket();
-
-            //Percorre o diretorio atualizando ponteiros e profundidades desses buckets
-            for(int indice = ponteiroOriginal; indice < diretorio.getLength(); indice += step){
-                //Ponteiro para o bucket imagem agora aponta para o original
-                diretorio.mudarPonteiro(indice, ponteiroOriginal);
-            }
-
-            //Inserimos todos os valores de volta
-            //Como o ponteiro aponta para o original, ele vai ser inserido nele
-            for(Registro registro : registros){
-                inserirValor(registro.linha, registro.valor);
-            }
-        }
-        else{
-            //Se for um bucket imagem e está vazio, é só deletar
-            bucket.deletarBucket();
-
-            //Percorre o diretorio atualizando ponteiros e profundidades desses buckets
-            for(int indice = ponteiroOriginal; indice < diretorio.getLength(); indice += step){
-                //Ponteiro para o bucket imagem agora aponta para o original
-                diretorio.mudarPonteiro(indice, ponteiroOriginal);
-            }
-
-            //Ponteiro para o bucket imagem agora aponta para o original
-            diretorio.mudarPonteiro(ponteiroIrmao, ponteiroOriginal);
-        }
-
+        
         if (profundidadeLocal == profundidadeGlobal){
+
             
             int maiorProfundidade = Collections.max(diretorio.getProfundidadesLocais());
 
             //Se a maior profundidade for 
             if(maiorProfundidade < profundidadeGlobal){
-                
+
                 diretorio.dividirDiretorio();
 
-                profundidadeGlobal--;
+                profundidadeGlobal -= 1;
+
             }
         }
         
+         //Se o bucket for o original e estiver vazio
+        //Então retiramos todos os valores do bucket imagem e colocamos nele, deletando o imagem
+        boolean bucketDeletadoEraOriginal =  !ehImagem;
+
+        if (bucketDeletadoEraOriginal){
+
+            var registros = new ArrayList<Registro>(bucketImagem.getRegistros());
+
+            bucketImagem.deletarBucket(); 
+
+            for(var registro : registros){
+                inserirValor(registro.linha, registro.valor);
+            }
+        }
 
         // Pega o novo bucket e testa aplica a função novamente
         int novaProfundidadeLocal = profundidadeLocal - 1;
@@ -230,11 +228,12 @@ public class HashingExtensivel {
             int mascara = ((1 << (novaProfundidadeLocal)) - 1);
             int novoPonteiro = ponteiroOriginal & mascara;
 
-            // POR ALGUM MOTIVO QUANDO TENTO OBTER BUCKET NO PONTEIRO 1 ELE OBTEM O BUCKET 5
             bucket = diretorio.obterBucket(novoPonteiro);
 
+            //Estiver cheio
             if (bucket.getRegistros().size() != 0){
 
+                //Eh
                 ehImagem = (novoPonteiro >> (novaProfundidadeLocal - 1)) == 1;
  
                 ponteiroIrmao = (ehImagem) ? novoPonteiro - (1 << (novaProfundidadeLocal - 1)) : novoPonteiro + (1 << (novaProfundidadeLocal - 1));

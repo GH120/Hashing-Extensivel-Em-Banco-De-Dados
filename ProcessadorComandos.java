@@ -105,7 +105,7 @@ public class ProcessadorComandos {
             }
         }
 
-        catch(Exception e){System.out.println("Erro na leitura do input");}
+        catch(Exception e){e.printStackTrace();}
         
 
     }
