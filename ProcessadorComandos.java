@@ -92,7 +92,7 @@ public class ProcessadorComandos {
                         writer.write("REM:" + valor + "/" + valoresDeletados + "," + hashingExtensivel.profundidadeGlobal + "," + hashingExtensivel.profundidadeLocal(valor));
                         writer.newLine();
                         break;
-                    case "BUS":
+                    case "BUS=":
 
                         int quantidadeSelecionada = hashingExtensivel.buscarValor(valor).size();
 
