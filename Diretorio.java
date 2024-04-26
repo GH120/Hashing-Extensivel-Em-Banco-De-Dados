@@ -74,7 +74,7 @@
             return ponteiros.size();
         }
 
-        public void mudarPonteiro(int idBucket, int indice){
+        public void mudarPonteiro(int indice, int idBucket){
             ponteiros.set(indice, idBucket);
         }
 

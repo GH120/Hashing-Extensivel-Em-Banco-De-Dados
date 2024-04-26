@@ -183,7 +183,7 @@ public class HashingExtensivel {
         //Percorre o diretorio atualizando ponteiros e profundidades desses buckets
         for(int indice = ponteiroOriginal; indice < diretorio.getLength(); indice += step){
             //Ponteiro para o bucket imagem agora aponta para o original
-            diretorio.mudarPonteiro(ponteiroOriginal, indice);
+            diretorio.mudarPonteiro(indice, ponteiroOriginal);
             diretorio.decrementarProfundidadeLocal(indice);
         }
 
