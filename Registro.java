@@ -1,13 +1,13 @@
 public class Registro {
     public int linha;
-    public int valor;
+    public int ano;
 
-    public Registro(int linha, int valor) {
+    public Registro(int linha, int ano) {
         this.linha = linha;
-        this.valor = valor;
+        this.ano = ano;
     }
 
     public String toString(){
-        return "Linha: " + linha + ", " + "Valor: " + valor;
+        return "Linha: " + linha + ", " + "Valor: " + ano;
     }
 }

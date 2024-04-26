@@ -3,6 +3,7 @@ import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +14,8 @@ public class ProcessadorComandos {
     String arquivoCSV;
 
     HashingExtensivel hashingExtensivel;
+    BufferedReader    reader;
+    BufferedWriter    writer;
 
     ProcessadorComandos(String arquivoEntrada, String arquivoSaida, String arquivoCSV){
         this.arquivoEntrada = arquivoEntrada;
@@ -21,9 +24,13 @@ public class ProcessadorComandos {
     }
     
 
-    public void processarArquivo(){
 
-        try(BufferedReader reader = new BufferedReader(new FileReader(arquivoEntrada))){
+    public void executarArquivoInput(){
+
+        try{
+
+            //Criação do leitor do arquivo de entrada
+            reader = new BufferedReader(new FileReader(arquivoEntrada));
 
             // Leitura da profundidade global
             String primeiraLinha = reader.readLine();
@@ -33,12 +40,12 @@ public class ProcessadorComandos {
             hashingExtensivel = new HashingExtensivel(profundidadeGlobal);
 
             // Criação do arquivo de saída
-            BufferedWriter writer = new BufferedWriter(new FileWriter(arquivoSaida));
+            writer = new BufferedWriter(new FileWriter(arquivoSaida));
             writer.write(primeiraLinha); // Escreve a profundidade global no arquivo de saída
             writer.newLine();
 
-            //Autoexplicatório
-            LerArquivoTratarCasosEscreverNoOutput(reader, writer);
+            //Lê as operações linha por linha do input e vai realizando no output
+            LerArquivoInput();
             
             //Salva o diretorio final para a analise
             hashingExtensivel.diretorio.armazenarDiretorio("arquivos/diretorio");
@@ -63,54 +70,18 @@ public class ProcessadorComandos {
         return Integer.parseInt(partes[1]);
     }
 
-    private void LerArquivoTratarCasosEscreverNoOutput(BufferedReader reader, BufferedWriter writer){
+    private void LerArquivoInput(){
 
         try{
             // Processamento das operações do arquivo de entrada
+            // Para cada linha extrai a operação e o ano como valor
             String linha;
             while ((linha = reader.readLine()) != null) {
                 String[] partes = linha.split(":");
                 String operacao = partes[0];
                 int valor = Integer.parseInt(partes[1]);
 
-                // Executa a operação correspondente no HashingExtensivel
-                switch (operacao) {
-                    case "INC":
-
-                        int profundidadeGlobalAntiga =  hashingExtensivel.profundidadeGlobal;
-
-                        //Procura todos os registros com esse ano no csv
-                        for(Registro registro : procurarNoCSV(valor)){
-                            hashingExtensivel.inserirValor(registro.linha, registro.valor); 
-                        }
-
-                        
-                        
-                        writer.write("INC:" + valor + "/" + hashingExtensivel.profundidadeGlobal + "," + hashingExtensivel.profundidadeLocal(valor));
-                        writer.newLine();
-
-                        if(profundidadeGlobalAntiga != hashingExtensivel.profundidadeGlobal){
-                            writer.write("DUP_DIR:" + "/" + hashingExtensivel.profundidadeGlobal + "," + hashingExtensivel.profundidadeLocal(valor));
-                            writer.newLine();
-                        }
-                        break;
-                    case "REM":
-
-                        int valoresDeletados = hashingExtensivel.deletarValor(valor); 
-
-                        writer.write("REM:" + valor + "/" + valoresDeletados + "," + hashingExtensivel.profundidadeGlobal + "," + hashingExtensivel.profundidadeLocal(valor));
-                        writer.newLine();
-                        break;
-                    case "BUS=":
-
-                        int quantidadeSelecionada = hashingExtensivel.buscarValor(valor).size();
-
-                        writer.write("BUS:" + valor + "/" + quantidadeSelecionada);
-                        writer.newLine();
-                        break;
-                    default:
-                        System.out.println("Operação inválida: " + operacao);
-                }
+                realizarOperacao(operacao, valor);
             }
         }
 
@@ -119,7 +90,49 @@ public class ProcessadorComandos {
 
     }
 
-    private List<Registro> procurarNoCSV(int ano) {
+    private void realizarOperacao(String operacao, int ano) throws IOException{
+
+        // Executa a operação correspondente no HashingExtensivel
+        switch (operacao) {
+            case "INC":
+
+                int profundidadeGlobalAntiga =  hashingExtensivel.profundidadeGlobal;
+
+                //Insere todos os registros com esse ano do csv no hashing
+                for(Registro registro : this.procurarRegistrosNoCSV(ano)){
+                    hashingExtensivel.inserir(registro); 
+                }
+
+                writer.write("INC:" + ano + "/" + hashingExtensivel.profundidadeGlobal + "," + hashingExtensivel.profundidadeLocal(ano));
+                writer.newLine();
+
+                if(profundidadeGlobalAntiga != hashingExtensivel.profundidadeGlobal){
+                    writer.write("DUP_DIR:" + "/" + hashingExtensivel.profundidadeGlobal + "," + hashingExtensivel.profundidadeLocal(ano));
+                    writer.newLine();
+                }
+
+                break;
+            case "REM":
+
+                int valoresDeletados = hashingExtensivel.deletar(ano); 
+
+                writer.write("REM:" + ano + "/" + valoresDeletados + "," + hashingExtensivel.profundidadeGlobal + "," + hashingExtensivel.profundidadeLocal(ano));
+                writer.newLine();
+                break;
+            case "BUS=":
+
+                int quantidadeSelecionada = hashingExtensivel.buscarIgual(ano).size();
+
+                writer.write("BUS:" + ano + "/" + quantidadeSelecionada);
+                writer.newLine();
+                break;
+            default:
+                System.out.println("Operação inválida: " + operacao);
+        }
+    }
+
+    /** Abre o arquivo csv para extrair os registros da tabela com esse ano e os retorna*/
+    private List<Registro> procurarRegistrosNoCSV(int ano) {
         
         List<Registro> registrosProcurados = new ArrayList<>();
 

@@ -1,6 +1,6 @@
 //Implementação da maioria do trabalho
-//Aceita incluir valores, deletar valores e buscar valores por igualdade
-//Ao inserir um valor, vai ver seu bucket pela função hash
+//Aceita incluir registros, deletar registros e buscar registros por igualdade
+//Ao inserir um ano, vai ver seu bucket pela função hash
 //Construtor aceita a profundidade global, quantidade de armazenamento no bucket e folder do diretório
 //Constroi inicialmente 2² buckets vazios
 
@@ -22,33 +22,33 @@ public class HashingExtensivel {
 
     }
 
-    public void inserirValor(Integer linha, Integer valor){
+    public void inserir(Registro novoRegistro){
 
-        var bucket = diretorio.obterBucket(getIndice(valor));
+        var bucket = diretorio.obterBucket(getIndice(novoRegistro.ano));
 
         bucket.carregarBucket();
 
         boolean cheio = bucket.getRegistros().size() >= BUCKETSIZE;
 
         if(cheio) 
-            handleOverflow(bucket,linha,valor);
+            handleOverflow(bucket, novoRegistro);
         else {
-            bucket.adicionarRegistro(linha,valor);
+            bucket.adicionarRegistro(novoRegistro);
             bucket.salvarBucket();
         }
         
     }
 
-    //**Retorna quantos valores foram deletados a partir desse */
-    public int deletarValor(Integer valor){
+    //**Retorna quantos registros foram deletados a partir desse */
+    public int deletar(int ano){
 
-        var bucket = diretorio.obterBucket(getIndice(valor));
+        var bucket = diretorio.obterBucket(getIndice(ano));
 
         bucket.carregarBucket();
 
         int tamanhoOriginal = bucket.getRegistros().size();
 
-        bucket.getRegistros().removeIf(registro -> registro.valor == valor);
+        bucket.getRegistros().removeIf(registro -> registro.ano == ano);
 
         bucket.salvarBucket();
 
@@ -57,26 +57,21 @@ public class HashingExtensivel {
         return tamanhoOriginal - bucket.getRegistros().size();
     }
 
-    public List<Registro> buscarValor(Integer valor){
+    public List<Registro> buscarIgual(int ano){
 
-        var bucket = diretorio.obterBucket(getIndice(valor));
+        var bucket = diretorio.obterBucket(getIndice(ano));
 
         bucket.carregarBucket();
 
         return bucket.getRegistros()
                      .stream()
-                     .filter(registro -> registro.valor == valor)
+                     .filter(registro -> registro.ano == ano)
                      .collect(Collectors.toList());
     }
 
-    public int profundidadeLocal(Integer valor){
+    public int profundidadeLocal(int ano){
 
-        System.out.println(getIndice(valor));
-
-
-        var bucket = diretorio.obterBucket(getIndice(valor));
-
-
+        var bucket = diretorio.obterBucket(getIndice(ano));
 
         return diretorio.getProfundidade(bucket);
     }
@@ -97,7 +92,7 @@ public class HashingExtensivel {
         }
     }
 
-    private void handleOverflow(Bucket bucket, int linha, int valor){
+    private void handleOverflow(Bucket bucket, Registro novoRegistro){
 
         int profundidadeLocal = diretorio.getProfundidade(bucket);
 
@@ -131,12 +126,12 @@ public class HashingExtensivel {
         bucket.limparRegistros();
         bucket.salvarBucket();
 
-        //O novo valor a ser inserido além dos que já existem
-        registros.add(new Registro(linha, valor));
+        //O novo registro a ser inserido além dos que já existem
+        registros.add(novoRegistro);
 
         //Reinsere os registros agora dividindo entre os dois buckets
         for(Registro registro : registros){
-            inserirValor(registro.linha, registro.valor);
+            inserir(registro);
         }
     }
 
@@ -170,11 +165,11 @@ public class HashingExtensivel {
         int ponteiroImagem   = (ehImagem)? ponteiroIndeterminado : ponteiroIrmao;       
         int ponteiroOriginal = (ehImagem)? ponteiroIrmao : ponteiroIndeterminado;
 
-        //Não precisamos mais do bucketIndeterminado
+        //Não precisamos mais do bucketIndeterminado e ele é vazio, deletamos o arquivo
         bucketIndeterminado.deletarBucket();
 
         //Carregamos o bucketImagem para caso tenhamos deletado o original
-        //Assim, vamos mudar esperar atualizar os ponteiros para adicionar os valores dele no original
+        //Assim, vamos mudar esperar atualizar os ponteiros para adicionar os registros dele no original
         Bucket bucketImagem = diretorio.obterBucket(ponteiroImagem);
 
         //O step entre cada índice que apontava para o bucket original 
@@ -189,10 +184,8 @@ public class HashingExtensivel {
 
         //Agora que os ponteiros estão apontando para o bucket original
         //Os registros do bucket imagem, se existirem, são reinseridos no original (que nesse caso foi deletado)
-        var registros = new ArrayList<Registro>(bucketImagem.getRegistros());
-
-        for(var registro : registros){
-            inserirValor(registro.linha, registro.valor);
+        for(var registro : bucketImagem.getRegistros()){
+            inserir(registro);
         }
 
         //Descarta o bucketImagem
@@ -230,18 +223,18 @@ public class HashingExtensivel {
 
     
     /**Função hash a ser definida */
-    private Integer Hash(Integer valor){
-        return valor;
+    private Integer Hash(int ano){
+        return ano;
     }
 
-    //**Transforma valor em um indice do diretório usando o hash dele e sua máscara */
-    private int getIndice(int valor){
+    //**Transforma ano em um indice do diretório usando o hash dele e sua máscara */
+    private int getIndice(int ano){
         
-        int valorHash  = Hash(valor);
+        int anoHash  = Hash(ano);
 
         int mascara = (1 << profundidadeGlobal) - 1;
 
-        int indice = valorHash & mascara;
+        int indice = anoHash & mascara;
 
         return indice;
     }

@@ -20,7 +20,7 @@ public class Main {
                                                 "arquivos/compras.csv" 
                                                 );
 
-        processador.processarArquivo();
+        processador.executarArquivoInput();
         
         try{
             processador.hashingExtensivel.diretorio.armazenarDiretorio("arquivos/diretorio");

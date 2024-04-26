@@ -63,7 +63,7 @@ public class Bucket {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(arquivo))) {
 
             for (Registro registro : registros) {
-                writer.write(registro.linha + "," + registro.valor);
+                writer.write(registro.linha + "," + registro.ano);
                 writer.newLine();
             }
 
@@ -99,7 +99,7 @@ public class Bucket {
         return registros;
     }
 
-    public void adicionarRegistro(int numeroLinha, int ano) {
-        registros.add(new Registro(numeroLinha, ano));
+    public void adicionarRegistro(Registro registro) {
+        registros.add(registro);
     }
 }
