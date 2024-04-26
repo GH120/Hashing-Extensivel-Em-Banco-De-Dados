@@ -215,12 +215,13 @@ public class HashingExtensivel {
 
             var registros = new ArrayList<Registro>(bucketImagem.getRegistros());
 
-            bucketImagem.deletarBucket(); 
-
             for(var registro : registros){
                 inserirValor(registro.linha, registro.valor);
             }
         }
+
+        //Descarta o bucketImagem
+        bucketImagem.deletarBucket(); 
 
         // Pega o novo bucket e testa aplica a função novamente
         int novaProfundidadeLocal = profundidadeLocal - 1;
