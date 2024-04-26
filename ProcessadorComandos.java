@@ -77,13 +77,22 @@ public class ProcessadorComandos {
                 switch (operacao) {
                     case "INC":
 
+                        int profundidadeGlobalAntiga =  hashingExtensivel.profundidadeGlobal;
+
                         //Procura todos os registros com esse ano no csv
                         for(Registro registro : procurarNoCSV(valor)){
                             hashingExtensivel.inserirValor(registro.linha, registro.valor); 
                         }
+
+                        
                         
                         writer.write("INC:" + valor + "/" + hashingExtensivel.profundidadeGlobal + "," + hashingExtensivel.profundidadeLocal(valor));
                         writer.newLine();
+
+                        if(profundidadeGlobalAntiga != hashingExtensivel.profundidadeGlobal){
+                            writer.write("DUP_DIR:" + "/" + hashingExtensivel.profundidadeGlobal + "," + hashingExtensivel.profundidadeLocal(valor));
+                            writer.newLine();
+                        }
                         break;
                     case "REM":
 
