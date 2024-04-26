@@ -149,103 +149,83 @@ public class HashingExtensivel {
     //Verifica se esvaziou um dos buckets
     //Caso 1: só dois bucket -> divide diretório e decrementa profundidade bucket original
     //Caso 2: vários buckets -> decrementa profundidade do bucket irmão e dele mesmo.
-    private void handleReduzirDiretorio(Bucket bucket){
+    private void handleReduzirDiretorio(Bucket bucketIndeterminado){
 
-        boolean vazio = bucket.getRegistros().size() == 0;
+        boolean vazio = bucketIndeterminado.getRegistros().size() == 0;
 
         if (!vazio) return;
 
-        int profundidadeLocal = diretorio.getProfundidade(bucket);
+        int profundidadeLocal = diretorio.getProfundidade(bucketIndeterminado);
 
         if(profundidadeLocal == 2) return;
 
-        boolean ehImagem   = (bucket.numero >> (profundidadeLocal - 1)) == 1;
+        //Não sabemos se esse bucket é o original ou a imagem dele
+        int ponteiroIndeterminado = bucketIndeterminado.numero;
 
-        int ponteiroOriginal = bucket.numero; 
-        int ponteiroIrmao    = (ehImagem) ? bucket.numero - (1 << (profundidadeLocal-1)) : bucket.numero + (1 << (profundidadeLocal - 1));
-        
-        int ponteiroOG     = (ehImagem)? ponteiroIrmao    : ponteiroOriginal;
-        int ponteiroImagem = (ehImagem)? ponteiroOriginal : ponteiroIrmao;
+        int     ultimoBit  = (1 << (profundidadeLocal-1));
+        boolean ehImagem   = (ponteiroIndeterminado >> (profundidadeLocal - 1)) == 1;
 
-        boolean naoTemImagem = ponteiroIrmao > Math.pow(2.0, profundidadeGlobal);
+        //A partir do irmão do bucker, conseguimos os ponteiros dos buckets original e imagem.
+        int ponteiroIrmao    = (ehImagem)? ponteiroIndeterminado -  ultimoBit : ponteiroIndeterminado + ultimoBit;
+        int ponteiroImagem   = (ehImagem)? ponteiroIndeterminado : ponteiroIrmao;       
+        int ponteiroOriginal = (ehImagem)? ponteiroIrmao : ponteiroIndeterminado;
 
-        if(naoTemImagem) return;
+        //Não precisamos mais do bucketIndeterminado
+        bucketIndeterminado.deletarBucket();
 
-        //Bucket é descartado
-        bucket.deletarBucket();
-
-        bucket = null;
-
-        //Obtem os registros do bucket imagem
+        //Carregamos o bucketImagem para caso tenhamos deletado o original
+        //Assim, vamos mudar esperar atualizar os ponteiros para adicionar os valores dele no original
         Bucket bucketImagem = diretorio.obterBucket(ponteiroImagem);
 
         //O step entre cada índice que apontava para o bucket original 
         double step = Math.pow(2, profundidadeLocal-1);
 
         //Percorre o diretorio atualizando ponteiros e profundidades desses buckets
-        for(int indice = ponteiroOG; indice < diretorio.getLength(); indice += step){
-
+        for(int indice = ponteiroOriginal; indice < diretorio.getLength(); indice += step){
             //Ponteiro para o bucket imagem agora aponta para o original
-            diretorio.mudarPonteiro(ponteiroOG, indice);
-
+            diretorio.mudarPonteiro(ponteiroOriginal, indice);
             diretorio.decrementarProfundidadeLocal(indice);
         }
 
-        
-        if (profundidadeLocal == profundidadeGlobal){
+        //Agora que os ponteiros estão apontando para o bucket original
+        //Os registros do bucket imagem, se existirem, são reinseridos no original (que nesse caso foi deletado)
+        var registros = new ArrayList<Registro>(bucketImagem.getRegistros());
 
-            
-            int maiorProfundidade = Collections.max(diretorio.getProfundidadesLocais());
-
-            //Se a maior profundidade for 
-            if(maiorProfundidade < profundidadeGlobal){
-
-                diretorio.dividirDiretorio();
-
-                profundidadeGlobal -= 1;
-
-            }
-        }
-        
-         //Se o bucket for o original e estiver vazio
-        //Então retiramos todos os valores do bucket imagem e colocamos nele, deletando o imagem
-        boolean bucketDeletadoEraOriginal =  !ehImagem;
-
-        if (bucketDeletadoEraOriginal){
-
-            var registros = new ArrayList<Registro>(bucketImagem.getRegistros());
-
-            for(var registro : registros){
-                inserirValor(registro.linha, registro.valor);
-            }
+        for(var registro : registros){
+            inserirValor(registro.linha, registro.valor);
         }
 
         //Descarta o bucketImagem
         bucketImagem.deletarBucket(); 
+        
+        //Lida com o caso de divisão diretório, quando não há nenhuma profundidade local igual a global
+        if (profundidadeLocal == profundidadeGlobal){
+            
+            int maiorProfundidade = Collections.max(diretorio.getProfundidadesLocais());
 
-        // Pega o novo bucket e testa aplica a função novamente
-        int novaProfundidadeLocal = profundidadeLocal - 1;
-        if(novaProfundidadeLocal >= 2){
-            int mascara = ((1 << (novaProfundidadeLocal)) - 1);
-            int novoPonteiro = ponteiroOriginal & mascara;
-
-            bucket = diretorio.obterBucket(novoPonteiro);
-
-            //Estiver cheio
-            if (bucket.getRegistros().size() != 0){
-
-                //Eh
-                ehImagem = (novoPonteiro >> (novaProfundidadeLocal - 1)) == 1;
- 
-                ponteiroIrmao = (ehImagem) ? novoPonteiro - (1 << (novaProfundidadeLocal - 1)) : novoPonteiro + (1 << (novaProfundidadeLocal - 1));
-
-                novoPonteiro = ponteiroIrmao & mascara;
-                bucket = diretorio.obterBucket(novoPonteiro);
-                if(bucket.getRegistros().size() != 0) return;
+            if(maiorProfundidade < profundidadeGlobal){
+                diretorio.dividirDiretorio();
+                profundidadeGlobal --;
             }
-
-            handleReduzirDiretorio(bucket);
         }
+
+        //Agora vamos verificar se os buckets com essa nova profundidade reduzida precisam também sofrer merge
+        //Para tal, retiramos o ultimo bit do ponteiro original
+        //E com o novo ponteiro resultante pegamos seu irmão (original ou imagem)
+        
+        profundidadeLocal--;
+
+            ultimoBit         = 1 << (profundidadeLocal-1);
+        int mascara           = (ultimoBit << 1) - 1;
+        
+        int novoPonteiro      = ponteiroOriginal & mascara;
+            ehImagem          = (novoPonteiro >> (profundidadeLocal - 1)) == 1;
+        int novoPonteiroIrmao = (ehImagem) ? novoPonteiro - ultimoBit : novoPonteiro + ultimoBit;
+
+
+        //Aplicamos o tratar redução de diretório para ambos os buckets original e imagem dessa profundidade
+        handleReduzirDiretorio(diretorio.obterBucket(novoPonteiro));
+        handleReduzirDiretorio(diretorio.obterBucket(novoPonteiroIrmao));
     }
 
     
